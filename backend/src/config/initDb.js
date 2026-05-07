@@ -1,56 +1,74 @@
-import fs from 'fs';
-import path from 'path';
-import { fileURLToPath } from 'url';
-import { query } from './db.js';
+import pkg from 'pg';
+const { Client } = pkg;
 
-const __filename = fileURLToPath(import.meta.url);
-const __dirname = path.dirname(__filename);
+let client;
 
-export const initializeDatabase = async () => {
+export default async function initializeDatabase() {
   try {
-    if (process.env.NODE_ENV !== 'development') {
-      console.log('⏭️  Skipping database initialization (not in development mode)');
+    const connectionString = process.env.DATABASE_URL;
+    
+    if (!connectionString) {
+      console.warn('⚠️  DATABASE_URL not set, skipping database initialization');
       return;
     }
 
-    console.log('🔧 Initializing database schema...');
+    client = new Client({
+      connectionString,
+      ssl: process.env.NODE_ENV === 'production' ? { rejectUnauthorized: false } : false,
+    });
 
-    await query('CREATE EXTENSION IF NOT EXISTS "uuid-ossp"');
-
-    const enums = [
-      "CREATE TYPE user_role AS ENUM ('admin', 'member')",
-      "CREATE TYPE project_status AS ENUM ('active', 'archived')",
-      "CREATE TYPE task_status AS ENUM ('todo', 'in_progress', 'review', 'done')",
-      "CREATE TYPE task_priority AS ENUM ('low', 'medium', 'high')",
-      "CREATE TYPE project_member_role AS ENUM ('admin', 'member')",
-    ];
-
-    for (const enumQuery of enums) {
-      try {
-        await query(enumQuery);
-      } catch (err) {
-        if (!err.message.includes('already exists')) {
-          throw err;
-        }
-      }
-    }
-
-    const schemaPath = path.join(__dirname, 'schema.sql');
-    const schemaSQL = fs.readFileSync(schemaPath, 'utf8');
-
-    const statements = schemaSQL
-      .split(';')
-      .map(stmt => stmt.trim())
-      .filter(stmt => stmt.length > 0 && !stmt.startsWith('CREATE TYPE') && !stmt.startsWith('CREATE EXTENSION'));
-
-    for (const statement of statements) {
-      await query(statement);
-    }
-
-    console.log('✅ Database schema initialized successfully');
+    await client.connect();
+    console.log('✓ Database connected successfully');
+    
+    // Create tables if they don't exist
+    await createTables();
+    
+    return client;
   } catch (error) {
-    console.error('❌ Database initialization error:', error.message);
+    console.error('✗ Database connection failed:', error.message);
+    throw error;
   }
-};
+}
 
-export default initializeDatabase;
+async function createTables() {
+  // Add your table creation queries here
+  const queries = [
+    `CREATE TABLE IF NOT EXISTS users (
+      id SERIAL PRIMARY KEY,
+      name VARCHAR(255) NOT NULL,
+      email VARCHAR(255) UNIQUE NOT NULL,
+      password VARCHAR(255) NOT NULL,
+      created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+    )`,
+    `CREATE TABLE IF NOT EXISTS projects (
+      id SERIAL PRIMARY KEY,
+      name VARCHAR(255) NOT NULL,
+      description TEXT,
+      created_by INT REFERENCES users(id),
+      created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+    )`,
+    `CREATE TABLE IF NOT EXISTS tasks (
+      id SERIAL PRIMARY KEY,
+      title VARCHAR(255) NOT NULL,
+      description TEXT,
+      status VARCHAR(50),
+      priority VARCHAR(50),
+      project_id INT REFERENCES projects(id),
+      assignee_id INT REFERENCES users(id),
+      due_date TIMESTAMP,
+      created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+    )`
+  ];
+
+  for (const query of queries) {
+    try {
+      await client.query(query);
+    } catch (error) {
+      console.warn('Table creation warning:', error.message);
+    }
+  }
+}
+
+export function getClient() {
+  return client;
+}
