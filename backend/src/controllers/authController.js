@@ -1,5 +1,5 @@
 import { validationResult } from 'express-validator';
-import bcryptjs from 'bcryptjs';
+import bcrypt from 'bcrypt';
 import jwt from 'jsonwebtoken';
 import { query } from '../config/db.js';
 
@@ -39,7 +39,7 @@ export const signup = async (req, res) => {
       });
     }
 
-    const hashedPassword = await bcryptjs.hash(password, 12);
+    const hashedPassword = await bcrypt.hash(password, 12);
 
     const result = await query(
       `INSERT INTO users (name, email, password_hash, role) 
@@ -103,7 +103,7 @@ export const login = async (req, res) => {
 
     const user = result.rows[0];
 
-    const isPasswordValid = await bcryptjs.compare(password, user.password_hash);
+    const isPasswordValid = await bcrypt.compare(password, user.password_hash);
 
     if (!isPasswordValid) {
       return res.status(401).json({
