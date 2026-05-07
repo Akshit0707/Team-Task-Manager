@@ -4,8 +4,13 @@ import { authAPI } from '../api/index.js';
 export const AuthContext = createContext();
 
 export const AuthProvider = ({ children }) => {
-  const [user, setUser] = useState(null);
-  const [token, setToken] = useState(null);
+  const [user, setUser] = useState(() => {
+    const savedUser = localStorage.getItem('user');
+    return savedUser ? JSON.parse(savedUser) : null;
+  });
+
+  // ✅ FIX: initialize token from localStorage synchronously
+  const [token, setToken] = useState(() => localStorage.getItem('token'));
   const [isLoading, setIsLoading] = useState(true);
 
   useEffect(() => {
@@ -15,9 +20,6 @@ export const AuthProvider = ({ children }) => {
         const savedUser = localStorage.getItem('user');
 
         if (savedToken && savedUser) {
-          setToken(savedToken);
-          setUser(JSON.parse(savedUser));
-
           try {
             const response = await authAPI.getMe();
             if (response.data.success) {
@@ -25,18 +27,20 @@ export const AuthProvider = ({ children }) => {
               localStorage.setItem('user', JSON.stringify(response.data.data.user));
             }
           } catch (error) {
+            // ✅ FIX: only clear on 401, not network errors
             if (error.response?.status === 401) {
               localStorage.removeItem('token');
               localStorage.removeItem('user');
               setToken(null);
               setUser(null);
             }
+            // network/500 errors: keep existing session, user stays logged in
           }
         }
       } catch (error) {
         console.error('Session restore error:', error);
       } finally {
-        setIsLoading(false); // CRITICAL: always unblock the app
+        setIsLoading(false);
       }
     };
 
