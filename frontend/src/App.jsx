@@ -6,6 +6,7 @@ import { ToastProvider } from './context/ToastContext';
 import Toast from './components/Toast/Toast';
 import ErrorFallback from './components/ErrorFallback';
 import { ErrorBoundary } from 'react-error-boundary';
+import { useAuth } from './hooks/useAuth';
 
 import Login from './pages/Login';
 import Signup from './pages/Signup';
