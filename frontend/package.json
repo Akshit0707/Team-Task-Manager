@@ -6,7 +6,7 @@
   "scripts": {
     "dev": "vite",
     "build": "vite build",
-    "start": "vite preview --host 0.0.0.0 --port 8080",
+    "start": "npx serve -s dist -l 8080",
     "lint": "eslint src --ext js,jsx"
   },
   "engines": {
@@ -21,7 +21,8 @@
     "zod": "^3.22.4",
     "@hookform/resolvers": "^3.3.4",
     "axios": "^1.6.2",
-    "react-error-boundary": "^4.0.11"
+    "react-error-boundary": "^4.0.11",
+    "serve": "^14.2.0"
   },
   "devDependencies": {
     "vite": "^5.0.8",
