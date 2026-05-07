@@ -16,129 +16,37 @@ import {
 const router = express.Router();
 router.use(verifyToken);
 
+// Standalone task routes — mounted at /api/tasks
 router.get('/my', getMyTasks);
-
 router.get('/dashboard', getDashboardStats);
 
-router.get(
-  '/projects/:projectId/tasks',
-  [
-    param('projectId')
-      .isUUID()
-      .withMessage('Invalid project ID'),
-    queryValidator('status')
-      .optional()
-      .isIn(['todo', 'in_progress', 'review', 'done'])
-      .withMessage('Invalid status'),
-    queryValidator('priority')
-      .optional()
-      .isIn(['low', 'medium', 'high'])
-      .withMessage('Invalid priority'),
-    queryValidator('assigneeId')
-      .optional()
-      .isUUID()
-      .withMessage('Invalid assignee ID'),
-    queryValidator('overdue')
-      .optional()
-      .isIn(['true', 'false'])
-      .withMessage('Invalid overdue value'),
-  ],
-  isProjectMember,
-  getProjectTasks
-);
-
-router.get(
-  '/:id',
-  [
-    param('id')
-      .isUUID()
-      .withMessage('Invalid task ID'),
-  ],
+router.get('/:id',
+  [param('id').isUUID().withMessage('Invalid task ID')],
   getTaskById
 );
 
-router.post(
-  '/projects/:projectId/tasks',
+router.put('/:id',
   [
-    param('projectId')
-      .isUUID()
-      .withMessage('Invalid project ID'),
-    body('title')
-      .trim()
-      .notEmpty()
-      .withMessage('Task title is required')
-      .isLength({ min: 3 })
-      .withMessage('Task title must be at least 3 characters'),
-    body('description')
-      .optional()
-      .trim(),
-    body('assigneeId')
-      .optional()
-      .isUUID()
-      .withMessage('Invalid assignee ID'),
-    body('priority')
-      .optional()
-      .isIn(['low', 'medium', 'high'])
-      .withMessage('Invalid priority'),
-    body('dueDate')
-      .optional()
-      .isISO8601()
-      .withMessage('Invalid due date format'),
-  ],
-  isProjectMember,
-  createTask
-);
-
-router.put(
-  '/:id',
-  [
-    param('id')
-      .isUUID()
-      .withMessage('Invalid task ID'),
-    body('title')
-      .optional()
-      .trim()
-      .isLength({ min: 3 })
-      .withMessage('Task title must be at least 3 characters'),
-    body('description')
-      .optional()
-      .trim(),
-    body('assigneeId')
-      .optional()
-      .isUUID()
-      .withMessage('Invalid assignee ID'),
-    body('priority')
-      .optional()
-      .isIn(['low', 'medium', 'high'])
-      .withMessage('Invalid priority'),
-    body('dueDate')
-      .optional()
-      .isISO8601()
-      .withMessage('Invalid due date format'),
+    param('id').isUUID().withMessage('Invalid task ID'),
+    body('title').optional().trim().isLength({ min: 3 }).withMessage('Task title must be at least 3 characters'),
+    body('description').optional().trim(),
+    body('assigneeId').optional().isUUID().withMessage('Invalid assignee ID'),
+    body('priority').optional().isIn(['low', 'medium', 'high']).withMessage('Invalid priority'),
+    body('dueDate').optional().isISO8601().withMessage('Invalid due date format'),
   ],
   updateTask
 );
 
-router.patch(
-  '/:id/status',
+router.patch('/:id/status',
   [
-    param('id')
-      .isUUID()
-      .withMessage('Invalid task ID'),
-    body('status')
-      .isIn(['todo', 'in_progress', 'review', 'done'])
-      .withMessage('Invalid status'),
+    param('id').isUUID().withMessage('Invalid task ID'),
+    body('status').isIn(['todo', 'in_progress', 'review', 'done']).withMessage('Invalid status'),
   ],
   updateTaskStatus
 );
 
-router.delete(
-  '/:id',
-  [
-    param('id')
-      .isUUID()
-      .withMessage('Invalid task ID'),
-  ],
+router.delete('/:id',
+  [param('id').isUUID().withMessage('Invalid task ID')],
   deleteTask
 );
 

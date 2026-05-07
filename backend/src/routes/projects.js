@@ -1,5 +1,5 @@
 import express from 'express';
-import { body, param } from 'express-validator';
+import { body, param, query as queryValidator } from 'express-validator';
 import { verifyToken } from '../middleware/auth.js';
 import {
   isProjectAdmin,
@@ -16,115 +16,97 @@ import {
   removeMember,
   getMembers,
 } from '../controllers/projectController.js';
+import {
+  getProjectTasks,
+  createTask,
+} from '../controllers/taskController.js';
 
 const router = express.Router();
-
 router.use(verifyToken);
 
-router.post(
-  '/',
+router.post('/',
   [
-    body('name')
-      .trim()
-      .notEmpty()
-      .withMessage('Project name is required')
-      .isLength({ min: 3 })
-      .withMessage('Project name must be at least 3 characters'),
-    body('description')
-      .optional()
-      .trim(),
+    body('name').trim().notEmpty().withMessage('Project name is required').isLength({ min: 3 }),
+    body('description').optional().trim(),
   ],
   createProject
 );
 
 router.get('/', getAllProjects);
 
-router.get(
-  '/:projectId',
-  [
-    param('projectId')
-      .isUUID()
-      .withMessage('Invalid project ID'),
-  ],
+router.get('/:projectId',
+  [param('projectId').isUUID().withMessage('Invalid project ID')],
   isProjectMember,
   getProjectById
 );
 
-router.put(
-  '/:projectId',
+router.put('/:projectId',
   [
-    param('projectId')
-      .isUUID()
-      .withMessage('Invalid project ID'),
-    body('name')
-      .optional()
-      .trim()
-      .isLength({ min: 3 })
-      .withMessage('Project name must be at least 3 characters'),
-    body('description')
-      .optional()
-      .trim(),
-    body('status')
-      .optional()
-      .isIn(['active', 'archived'])
-      .withMessage('Invalid project status'),
+    param('projectId').isUUID().withMessage('Invalid project ID'),
+    body('name').optional().trim().isLength({ min: 3 }),
+    body('description').optional().trim(),
+    body('status').optional().isIn(['active', 'archived']),
   ],
   isProjectAdmin,
   updateProject
 );
 
-router.delete(
-  '/:projectId',
-  [
-    param('projectId')
-      .isUUID()
-      .withMessage('Invalid project ID'),
-  ],
+router.delete('/:projectId',
+  [param('projectId').isUUID().withMessage('Invalid project ID')],
   isProjectAdmin,
   deleteProject
 );
 
-router.get(
-  '/:projectId/members',
-  [
-    param('projectId')
-      .isUUID()
-      .withMessage('Invalid project ID'),
-  ],
+router.get('/:projectId/members',
+  [param('projectId').isUUID().withMessage('Invalid project ID')],
   isProjectMember,
   getMembers
 );
 
-router.post(
-  '/:projectId/members',
+router.post('/:projectId/members',
   [
-    param('projectId')
-      .isUUID()
-      .withMessage('Invalid project ID'),
-    body('email')
-      .isEmail()
-      .withMessage('Valid email is required'),
-    body('role')
-      .optional()
-      .isIn(['admin', 'member'])
-      .withMessage('Invalid role'),
+    param('projectId').isUUID().withMessage('Invalid project ID'),
+    body('email').isEmail().withMessage('Valid email is required'),
+    body('role').optional().isIn(['admin', 'member']),
   ],
   isProjectAdmin,
   addMember
 );
 
-router.delete(
-  '/:projectId/members/:memberId',
+router.delete('/:projectId/members/:memberId',
   [
-    param('projectId')
-      .isUUID()
-      .withMessage('Invalid project ID'),
-    param('memberId')
-      .isUUID()
-      .withMessage('Invalid member ID'),
+    param('projectId').isUUID().withMessage('Invalid project ID'),
+    param('memberId').isUUID().withMessage('Invalid member ID'),
   ],
   isProjectAdmin,
   removeMember
+);
+
+// ── Project task routes ──────────────────────────────────────────────────────
+
+router.get('/:projectId/tasks',
+  [
+    param('projectId').isUUID().withMessage('Invalid project ID'),
+    queryValidator('status').optional().isIn(['todo', 'in_progress', 'review', 'done']),
+    queryValidator('priority').optional().isIn(['low', 'medium', 'high']),
+    queryValidator('assigneeId').optional().isUUID(),
+    queryValidator('overdue').optional().isIn(['true', 'false']),
+  ],
+  isProjectMember,
+  getProjectTasks
+);
+
+router.post('/:projectId/tasks',
+  [
+    param('projectId').isUUID().withMessage('Invalid project ID'),
+    body('title').trim().notEmpty().withMessage('Task title is required').isLength({ min: 3 }),
+    body('description').optional().trim(),
+    body('assigneeId').optional().isUUID().withMessage('Invalid assignee ID'),
+    body('priority').optional().isIn(['low', 'medium', 'high']),
+    body('dueDate').optional().isISO8601(),
+  ],
+  isProjectMember,
+  createTask
 );
 
 export default router;
