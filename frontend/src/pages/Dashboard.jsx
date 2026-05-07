@@ -224,7 +224,7 @@ const TaskList = ({ tasks, loading }) => {
                 <tr
                   key={task.id}
                   className="hover:bg-gray-50 transition cursor-pointer"
-                  onClick={() => navigate(`/tasks`)}
+                  onClick={() => navigate('/my-tasks')}
                 >
                   <td className="px-6 py-4">
                     <p className="font-medium text-gray-900 truncate">
@@ -429,7 +429,7 @@ export default function Dashboard() {
             </button>
 
             <button
-              onClick={() => navigate('/tasks')}
+              onClick={() => navigate('/my-tasks')}
               className="w-full flex items-center justify-center space-x-2 px-4 py-3 bg-white border-2 border-indigo-600 hover:bg-indigo-50 text-indigo-600 font-semibold rounded-lg transition duration-200"
             >
               <svg

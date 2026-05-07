@@ -9,7 +9,7 @@ export default function Sidebar({ isOpen, onClose }) {
   const navLinks = [
     { path: '/', label: 'Dashboard', icon: 'dashboard' },
     { path: '/projects', label: 'Projects', icon: 'projects' },
-    { path: '/tasks', label: 'My Tasks', icon: 'tasks' },
+    { path: '/my-tasks', label: 'My Tasks', icon: 'tasks' },
   ];
 
   const isActive = (path) => location.pathname === path;
