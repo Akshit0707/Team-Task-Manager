@@ -8,7 +8,7 @@
     "frontend": {
       "root": "frontend",
       "buildCommand": "npm install && npm run build",
-      "startCommand": "npm run preview"
+      "startCommand": "npx serve -s dist -l $PORT"
     }
   }
 }
