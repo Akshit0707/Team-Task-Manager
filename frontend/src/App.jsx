@@ -31,16 +31,16 @@ const AppRoutes = () => {
     <Routes>
       <Route path="/login" element={<PublicRoute><Login /></PublicRoute>} />
       <Route path="/signup" element={<PublicRoute><Signup /></PublicRoute>} />
-
       <Route path="/dashboard" element={<ProtectedRoute><Dashboard /></ProtectedRoute>} />
       <Route path="/projects" element={<ProtectedRoute><Projects /></ProtectedRoute>} />
-
-      {/* ✅ ADD THESE MISSING ROUTES */}
       <Route path="/projects/:projectId" element={<ProtectedRoute><ProjectDetail /></ProtectedRoute>} />
+
+      {/* ✅ THIS IS THE ONE STILL MISSING */}
+      <Route path="/tasks" element={<ProtectedRoute><MyTasks /></ProtectedRoute>} />
+
       <Route path="/tasks/create" element={<ProtectedRoute><CreateTask /></ProtectedRoute>} />
       <Route path="/projects/:projectId/tasks/create" element={<ProtectedRoute><CreateTask /></ProtectedRoute>} />
       <Route path="/tasks/:taskId" element={<ProtectedRoute><TaskDetail /></ProtectedRoute>} />
-
       <Route path="/my-tasks" element={<ProtectedRoute><MyTasks /></ProtectedRoute>} />
       <Route path="/" element={<Navigate to="/dashboard" replace />} />
     </Routes>
