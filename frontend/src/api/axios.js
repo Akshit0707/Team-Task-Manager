@@ -22,9 +22,9 @@ axiosInstance.interceptors.response.use(
   (response) => response,
   (error) => {
     const is401 = error.response?.status === 401;
-    const isMeRoute = error.config?.url?.includes('/me'); 
+    const isSessionRestore = error.config?._isSessionRestore === true; // ← flag-based, not URL matching
 
-    if (is401 && !isMeRoute) {                             
+    if (is401 && !isSessionRestore) {
       localStorage.removeItem('token');
       localStorage.removeItem('user');
       window.location.href = '/login';

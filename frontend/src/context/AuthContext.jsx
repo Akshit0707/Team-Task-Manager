@@ -25,16 +25,12 @@ export const AuthProvider = ({ children }) => {
               localStorage.setItem('user', JSON.stringify(response.data.data.user));
             }
           } catch (error) {
-            // ✅ Only clear session if the token is genuinely rejected (401)
-            // For network errors, CORS, 5xx — keep the saved session intact
             if (error.response?.status === 401) {
               localStorage.removeItem('token');
               localStorage.removeItem('user');
               setToken(null);
               setUser(null);
             }
-            // All other errors: silently keep the localStorage session
-            // The user stays logged in; getMe will retry next page load
           }
         }
       } catch (error) {
