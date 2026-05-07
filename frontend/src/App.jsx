@@ -42,12 +42,12 @@ function App() {
     <ErrorBoundary FallbackComponent={ErrorFallback}>
       <QueryClientProvider client={queryClient}>
         <BrowserRouter>
-        <AuthProvider>
-          <ToastProvider>
-            <Toast />
+          <AuthProvider>
+            <ToastProvider>
+              <Toast />
               <AppRoutes />
-          </ToastProvider>
-        </AuthProvider>
+            </ToastProvider>
+          </AuthProvider>
         </BrowserRouter>
       </QueryClientProvider>
     </ErrorBoundary>

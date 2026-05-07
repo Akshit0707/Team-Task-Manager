@@ -6,7 +6,7 @@ export const AuthContext = createContext();
 export const AuthProvider = ({ children }) => {
   const [user, setUser] = useState(null);
   const [token, setToken] = useState(null);
-  const [isLoading, setIsLoading] = useState(true); // starts true — blocks render until session checked
+  const [isLoading, setIsLoading] = useState(true); // true only during initial session restore
 
   useEffect(() => {
     const restoreSession = async () => {
@@ -25,7 +25,7 @@ export const AuthProvider = ({ children }) => {
               localStorage.setItem('user', JSON.stringify(response.data.data.user));
             }
           } catch (error) {
-            // Token is invalid/expired — clear everything
+            // Token expired or invalid - clear session
             localStorage.removeItem('token');
             localStorage.removeItem('user');
             setToken(null);
@@ -35,7 +35,7 @@ export const AuthProvider = ({ children }) => {
       } catch (error) {
         console.error('Session restore error:', error);
       } finally {
-        setIsLoading(false); // ✅ CRITICAL — always unblock the app after check
+        setIsLoading(false); // CRITICAL: always unblock the app
       }
     };
 
@@ -43,38 +43,31 @@ export const AuthProvider = ({ children }) => {
   }, []);
 
   const login = async (email, password) => {
-    // ✅ Do NOT touch isLoading here — it causes ProtectedRoute to re-evaluate
-    // and redirect to /login before isAuthenticated updates
-    try {
-      const response = await authAPI.login(email, password);
-      if (response.data.success) {
-        const { user, token } = response.data.data;
-        setUser(user);
-        setToken(token);
-        localStorage.setItem('token', token);
-        localStorage.setItem('user', JSON.stringify(user));
-        return response.data;
-      }
-    } catch (error) {
-      throw error;
+    // NEVER touch isLoading here - it causes ProtectedRoute to flash and redirect to /login
+    const response = await authAPI.login(email, password);
+    if (response.data.success) {
+      const { user, token } = response.data.data;
+      setUser(user);
+      setToken(token);
+      localStorage.setItem('token', token);
+      localStorage.setItem('user', JSON.stringify(user));
+      return response.data;
     }
+    throw new Error('Login failed');
   };
 
   const signup = async (name, email, password) => {
-    // ✅ Same — do NOT set isLoading here
-    try {
-      const response = await authAPI.signup(name, email, password);
-      if (response.data.success) {
-        const { user, token } = response.data.data;
-        setUser(user);
-        setToken(token);
-        localStorage.setItem('token', token);
-        localStorage.setItem('user', JSON.stringify(user));
-        return response.data;
-      }
-    } catch (error) {
-      throw error;
+    // NEVER touch isLoading here either
+    const response = await authAPI.signup(name, email, password);
+    if (response.data.success) {
+      const { user, token } = response.data.data;
+      setUser(user);
+      setToken(token);
+      localStorage.setItem('token', token);
+      localStorage.setItem('user', JSON.stringify(user));
+      return response.data;
     }
+    throw new Error('Signup failed');
   };
 
   const logout = () => {

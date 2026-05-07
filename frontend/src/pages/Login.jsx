@@ -6,7 +6,7 @@ import { useToast } from '../hooks/useToast';
 export default function Login() {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
-  const [isLoading, setIsLoading] = useState(false);
+  const [isSubmitting, setIsSubmitting] = useState(false); // local loading only
   const [error, setError] = useState('');
   const navigate = useNavigate();
   const { login } = useAuth();
@@ -15,24 +15,19 @@ export default function Login() {
   const handleSubmit = async (e) => {
     e.preventDefault();
     setError('');
-    setIsLoading(true);
+    setIsSubmitting(true);
 
     try {
-      const response = await login(email, password);
-      console.log('Login response:', response);
+      await login(email, password);
       showToast('Login successful!', 'success');
-      
-      // Force navigation after a short delay
-      setTimeout(() => {
-        navigate('/dashboard', { replace: true });
-      }, 500);
+      navigate('/dashboard', { replace: true }); // no setTimeout needed
     } catch (error) {
       console.error('Login error:', error);
       const errorMsg = error.response?.data?.message || error.message || 'Login failed';
       setError(errorMsg);
       showToast(errorMsg, 'error');
     } finally {
-      setIsLoading(false);
+      setIsSubmitting(false);
     }
   };
 
@@ -44,7 +39,7 @@ export default function Login() {
             Sign in to your account
           </h2>
         </div>
-        
+
         {error && (
           <div className="bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded">
             {error}
@@ -84,10 +79,10 @@ export default function Login() {
 
           <button
             type="submit"
-            disabled={isLoading}
+            disabled={isSubmitting}
             className="w-full bg-blue-600 text-white py-2 rounded-md hover:bg-blue-700 disabled:opacity-50 font-medium"
           >
-            {isLoading ? 'Signing in...' : 'Sign in'}
+            {isSubmitting ? 'Signing in...' : 'Sign in'}
           </button>
         </form>
 
