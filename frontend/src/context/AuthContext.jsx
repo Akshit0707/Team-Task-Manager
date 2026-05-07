@@ -33,9 +33,7 @@ export const AuthProvider = ({ children }) => {
         }
       } catch (error) {
         console.error('Session restore error:', error);
-      } finally {
-        setIsLoading(false);
-      }
+      } 
     };
 
     restoreSession();
@@ -43,27 +41,26 @@ export const AuthProvider = ({ children }) => {
 
   const login = async (email, password) => {
     try {
-      setIsLoading(true);
       const response = await authAPI.login(email, password);
 
       if (response.data.success) {
         const { user, token } = response.data.data;
+        console.log('Login successful:', { user, token }); // Debug log
+
         setUser(user);
         setToken(token);
         localStorage.setItem('token', token);
         localStorage.setItem('user', JSON.stringify(user));
+
         return response.data;
       }
     } catch (error) {
       throw error;
-    } finally {
-      setIsLoading(false);
-    }
+    } 
   };
 
   const signup = async (name, email, password) => {
     try {
-      setIsLoading(true);
       const response = await authAPI.signup(name, email, password);
 
       if (response.data.success) {
@@ -76,9 +73,7 @@ export const AuthProvider = ({ children }) => {
       }
     } catch (error) {
       throw error;
-    } finally {
-      setIsLoading(false);
-    }
+    } 
   };
 
   const logout = () => {
