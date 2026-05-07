@@ -19,5 +19,8 @@
     "express-rate-limit": "7.0.0",
     "cors": "2.8.5",
     "helmet": "7.0.0"
+  },
+  "devDependencies": {
+    "nodemon": "3.0.2"
   }
 }
