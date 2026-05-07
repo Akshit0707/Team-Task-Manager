@@ -1,7 +1,7 @@
 import React, { createContext, useContext, useState } from 'react';
 import Toast from '../components/Toast/Toast';
 
-const ToastContext = createContext();
+export const ToastContext = createContext();
 
 export const ToastProvider = ({ children }) => {
   const [toasts, setToasts] = useState([]);
@@ -40,3 +40,5 @@ export const useToast = () => {
   }
   return context;
 };
+
+export default ToastContext;
