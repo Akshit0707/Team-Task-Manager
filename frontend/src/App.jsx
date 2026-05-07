@@ -6,13 +6,14 @@ import { ToastProvider } from './context/ToastContext';
 import Toast from './components/Toast/Toast';
 import ErrorFallback from './components/ErrorFallback';
 import { ErrorBoundary } from 'react-error-boundary';
-import { useAuth } from './hooks/useAuth';
 
 import Login from './pages/Login';
 import Signup from './pages/Signup';
 import Dashboard from './pages/Dashboard';
 import Projects from './pages/Projects';
 import MyTasks from './pages/MyTasks';
+import ProtectedRoute from './components/ProtectedRoute';
+import PublicRoute from './components/PublicRoute';
 
 const queryClient = new QueryClient({
   defaultOptions: {
@@ -22,26 +23,6 @@ const queryClient = new QueryClient({
     },
   },
 });
-
-const ProtectedRoute = ({ children }) => {
-  const { isAuthenticated, isLoading } = useAuth();
-
-  if (isLoading) {
-    return <div className="flex items-center justify-center h-screen">Loading...</div>;
-  }
-
-  return isAuthenticated ? children : <Navigate to="/login" replace />;
-};
-
-const PublicRoute = ({ children }) => {
-  const { isAuthenticated, isLoading } = useAuth();
-
-  if (isLoading) {
-    return <div className="flex items-center justify-center h-screen">Loading...</div>;
-  }
-
-  return isAuthenticated ? <Navigate to="/dashboard" replace /> : children;
-};
 
 const AppRoutes = () => {
   return (
