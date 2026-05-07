@@ -5,7 +5,7 @@ export const authAPI = {
     axiosInstance.post('/auth/login', { email, password }),
   signup: (name, email, password) =>
     axiosInstance.post('/auth/signup', { name, email, password }),
-  getMe: () => axiosInstance.get('/auth/me', { _isSessionRestore: true }), // ← flag added
+  getMe: () => axiosInstance.get('/auth/me'), 
 };
 
 export const projectsAPI = {

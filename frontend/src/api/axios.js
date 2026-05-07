@@ -22,13 +22,15 @@ axiosInstance.interceptors.response.use(
   (response) => response,
   (error) => {
     const is401 = error.response?.status === 401;
-    const isSessionRestore = error.config?._isSessionRestore === true; // ← flag-based, not URL matching
+    const url = error.config?.url ?? '';
+    const isAuthMe = url.includes('/auth/me'); // exact match, no ambiguity
 
-    if (is401 && !isSessionRestore) {
+    if (is401 && !isAuthMe) {
       localStorage.removeItem('token');
       localStorage.removeItem('user');
       window.location.href = '/login';
     }
+
     return Promise.reject(error);
   }
 );
