@@ -20,7 +20,7 @@ export default async function initializeDatabase() {
     await client.connect();
     console.log('✓ Database connected successfully');
     
-    // Create tables if they don't exist
+    // Create tables
     await createTables();
     
     return client;
@@ -31,41 +31,63 @@ export default async function initializeDatabase() {
 }
 
 async function createTables() {
-  // Add your table creation queries here
-  const queries = [
-    `CREATE TABLE IF NOT EXISTS users (
-      id SERIAL PRIMARY KEY,
-      name VARCHAR(255) NOT NULL,
-      email VARCHAR(255) UNIQUE NOT NULL,
-      password VARCHAR(255) NOT NULL,
-      created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
-    )`,
-    `CREATE TABLE IF NOT EXISTS projects (
-      id SERIAL PRIMARY KEY,
-      name VARCHAR(255) NOT NULL,
-      description TEXT,
-      created_by INT REFERENCES users(id),
-      created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
-    )`,
-    `CREATE TABLE IF NOT EXISTS tasks (
-      id SERIAL PRIMARY KEY,
-      title VARCHAR(255) NOT NULL,
-      description TEXT,
-      status VARCHAR(50),
-      priority VARCHAR(50),
-      project_id INT REFERENCES projects(id),
-      assignee_id INT REFERENCES users(id),
-      due_date TIMESTAMP,
-      created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
-    )`
-  ];
+  try {
+    const queries = [
+      `CREATE TABLE IF NOT EXISTS users (
+        id SERIAL PRIMARY KEY,
+        name VARCHAR(255) NOT NULL,
+        email VARCHAR(255) UNIQUE NOT NULL,
+        password VARCHAR(255) NOT NULL,
+        created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+      )`,
+      
+      `CREATE TABLE IF NOT EXISTS projects (
+        id SERIAL PRIMARY KEY,
+        name VARCHAR(255) NOT NULL,
+        description TEXT,
+        created_by INT REFERENCES users(id) ON DELETE CASCADE,
+        created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+      )`,
+      
+      `CREATE TABLE IF NOT EXISTS tasks (
+        id SERIAL PRIMARY KEY,
+        title VARCHAR(255) NOT NULL,
+        description TEXT,
+        status VARCHAR(50) DEFAULT 'todo',
+        priority VARCHAR(50) DEFAULT 'medium',
+        project_id INT REFERENCES projects(id) ON DELETE CASCADE,
+        assignee_id INT REFERENCES users(id) ON DELETE SET NULL,
+        due_date TIMESTAMP,
+        created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+      )`,
 
-  for (const query of queries) {
-    try {
-      await client.query(query);
-    } catch (error) {
-      console.warn('Table creation warning:', error.message);
+      `CREATE TABLE IF NOT EXISTS project_members (
+        id SERIAL PRIMARY KEY,
+        project_id INT REFERENCES projects(id) ON DELETE CASCADE,
+        user_id INT REFERENCES users(id) ON DELETE CASCADE,
+        role VARCHAR(50) DEFAULT 'member',
+        created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+        UNIQUE(project_id, user_id)
+      )`
+    ];
+
+    for (const query of queries) {
+      try {
+        await client.query(query);
+        console.log('✓ Table created/verified');
+      } catch (error) {
+        if (error.code === '42P07') {
+          // Table already exists, ignore
+          continue;
+        }
+        throw error;
+      }
     }
+
+    console.log('✓ All tables initialized successfully');
+  } catch (error) {
+    console.error('✗ Error creating tables:', error.message);
+    throw error;
   }
 }
 

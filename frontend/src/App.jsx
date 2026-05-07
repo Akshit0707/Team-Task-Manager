@@ -1,9 +1,9 @@
 import React from 'react';
 import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
-import { AuthProvider, useAuth } from './context/AuthContext';
+import { AuthProvider } from './context/AuthContext';
 import { ToastProvider } from './context/ToastContext';
-import Toast from './components/Toast';
+import Toast from './components/Toast/Toast';
 import ErrorFallback from './components/ErrorFallback';
 import { ErrorBoundary } from 'react-error-boundary';
 
