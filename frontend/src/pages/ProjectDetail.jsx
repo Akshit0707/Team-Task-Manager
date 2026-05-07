@@ -131,7 +131,7 @@ export default function ProjectDetail() {
 
         <div className="p-6">
           {activeTab === 'tasks' && (
-            <TasksTab tasks={tasks} loading={tasksLoading} projectId={id} />
+            <TasksTab tasks={tasks} loading={tasksLoading} projectId={id} members={members} />
           )}
           {activeTab === 'members' && (
             <MembersTab
