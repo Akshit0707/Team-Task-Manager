@@ -1,4 +1,5 @@
 import axios from 'axios';
+
 const axiosInstance = axios.create({
   baseURL: import.meta.env.VITE_API_URL || '/api',
   headers: {
@@ -20,7 +21,10 @@ axiosInstance.interceptors.request.use(
 axiosInstance.interceptors.response.use(
   (response) => response,
   (error) => {
-    if (error.response?.status === 401) {
+    const is401 = error.response?.status === 401;
+    const isMeRoute = error.config?.url?.includes('/me'); 
+
+    if (is401 && !isMeRoute) {                             
       localStorage.removeItem('token');
       localStorage.removeItem('user');
       window.location.href = '/login';

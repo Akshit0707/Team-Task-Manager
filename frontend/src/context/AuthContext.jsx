@@ -6,7 +6,7 @@ export const AuthContext = createContext();
 export const AuthProvider = ({ children }) => {
   const [user, setUser] = useState(null);
   const [token, setToken] = useState(null);
-  const [isLoading, setIsLoading] = useState(true); // true only during initial session restore
+  const [isLoading, setIsLoading] = useState(true);
 
   useEffect(() => {
     const restoreSession = async () => {
@@ -25,11 +25,16 @@ export const AuthProvider = ({ children }) => {
               localStorage.setItem('user', JSON.stringify(response.data.data.user));
             }
           } catch (error) {
-            // Token expired or invalid - clear session
-            localStorage.removeItem('token');
-            localStorage.removeItem('user');
-            setToken(null);
-            setUser(null);
+            // ✅ Only clear session if the token is genuinely rejected (401)
+            // For network errors, CORS, 5xx — keep the saved session intact
+            if (error.response?.status === 401) {
+              localStorage.removeItem('token');
+              localStorage.removeItem('user');
+              setToken(null);
+              setUser(null);
+            }
+            // All other errors: silently keep the localStorage session
+            // The user stays logged in; getMe will retry next page load
           }
         }
       } catch (error) {
@@ -43,7 +48,6 @@ export const AuthProvider = ({ children }) => {
   }, []);
 
   const login = async (email, password) => {
-    // NEVER touch isLoading here - it causes ProtectedRoute to flash and redirect to /login
     const response = await authAPI.login(email, password);
     if (response.data.success) {
       const { user, token } = response.data.data;
@@ -57,7 +61,6 @@ export const AuthProvider = ({ children }) => {
   };
 
   const signup = async (name, email, password) => {
-    // NEVER touch isLoading here either
     const response = await authAPI.signup(name, email, password);
     if (response.data.success) {
       const { user, token } = response.data.data;
